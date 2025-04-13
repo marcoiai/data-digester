@@ -4,15 +4,49 @@
         include_once('AutoLoader.php');
         include_once('bootstrap.php');
 
-        use app\Model\ValueObject\CPFValueObject;
+        use app\Http\Actions\lookupUserAction;
+use app\Http\Actions\UserAction;
+use app\Model\ValueObject\CPFValueObject;
         use app\Model\ValueObject\CryptValueObject;
         use app\Model\ErrorHandling\handleExceptions;
- 
-        print_r(__LINE__);
-        die(__FILE__);
+
 
         unset($_GET); // Just an ideia to avoid exploits
         unset($_POST); // Just an ideia to avoid exploits
+
+        $request = $_SERVER['REQUEST_URI'];
+
+        // Simulate .htaccess rewriting just for dev
+        $request = str_ireplace('/tests.php', '', $request);
+        $request = str_ireplace('/index.php', '', $request);
+        
+        switch ($request) {
+            case '/add/user':
+                $a = new UserAction();
+                var_dump($a->getInstance(), $a->returnContract(), 'aoeueoau teste');
+
+                echo '<br><br>';
+
+                $a->first_name = 'teste';
+
+                var_dump($a);
+                //die("Action user add: " . __FILE__ . ": " . __LINE__);
+            break;
+       
+            case '/update/user/':
+               require __DIR__ . '/views/dep.php';
+            break;
+
+            case '/update/user/':
+                require __DIR__ . '/views/dep.php';
+             break;
+
+             default:
+                echo <<<HTML
+                <h1>404 Error.</h1>
+HTML;
+             break;
+       }
 
         $fn = function () {
 
@@ -22,10 +56,12 @@
             if ($jsonData) {
                 \json_decode($jsonData, true);
             }
-            /** JSON ver como tratar, recebe rcertinho */
+            
+            /** 
+             * JSON ver como tratar, recebe rcertinho 
 
-            //echo "Yeah Yeah!<br><br>";
-            //throw new \Exception('teste');
+            echo "Yeah Yeah!<br><br>";
+            throw new \Exception('teste');
 
             $cpf = new CPFValueObject('035.637.729-67');
 
@@ -36,6 +72,7 @@
             print_r($encrypted);
 
             var_dump($crypt->decrypt($encrypted));
+            **/
         };
 
         $test = new handleExceptions($fn);

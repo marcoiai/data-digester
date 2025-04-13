@@ -1,6 +1,6 @@
 <?php
 
-set_include_path(get_include_path() . ':' . substr($_SERVER['DOCUMENT_ROOT'], 0, strlen($_SERVER['DOCUMENT_ROOT']) -3 ));
+set_include_path(get_include_path() . ':' . substr(__DIR__, 0, strlen(__DIR__) -3 ));
 
 spl_autoload_register(function($class_name) {
     try {
