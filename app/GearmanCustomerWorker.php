@@ -2,30 +2,95 @@
 include_once(__DIR__ . '/../bootstrap.php');
 include_once('AutoLoader.php');
 
-use app\Callable\DataBaseCallable;
-use app\Http\Actions\lookupUserAction;
-use app\Model\ErrorHandling\handleExceptions;
-use app\Model\PDOTest;
+use app\Http\Actions\customerAction;
 
 $worker = new \GearmanWorker();
 $worker->addServer();
 
-$worker->addFunction('lookup_user', function(\GearmanJob $job){
+/**
+ *  cli or cli-server, there other options
+ */
+if (php_sapi_name() === 'cli')
+{
+    echo "\n⚙️  -  Iniciando o Worker via CLI.\n";
+} else {
+    $request = $_SERVER['REQUEST_URI'];
+
+    // Simulate .htaccess rewriting just for dev
+    $request = str_ireplace('/tests.php', '', $request);
+    $request = str_ireplace('/index.php', '', $request);
+
+    /** JSON ver como tratar, recebe rcertinho */
+    $jsonData = file_get_contents('php://input');
+
+    if ($jsonData) {
+        $payload = \json_decode($jsonData, true);
+    }
+}
+
+$worker->addFunction('customerAdd', function(\GearmanJob $job) 
+{
+    $payload = json_decode($job->workload(), true);
+    
+    //print_r($payload);
+
+    echo '🆕 ';
+
+    //echo "\n🆕  -  customerAdd -> Inserindo usuário.\n";
+
+    $addAction = new customerAction();
+            
+    $addAction->doInsert(
+        $payload
+    );
+
+    //header('Content-Type: application/json');
+    //http_response_code(202);
+    return json_encode( ['data' => [
+        'success' => true
+    ]]);
+});
+
+$worker->addFunction('customerFind', function(\GearmanJob $job)
+{
+    $payload = json_decode($job->workload(), true);
+
+    $action = new customerAction();
+
+    echo '✅ ';
+
+    //echo "🖥️  -  Looking up users \n";
+    //sleep(3);
+    return \json_encode($action->findAll(null, $payload));
+});
+
+$worker->addFunction('customerUpdate', function(\GearmanJob $job){
     // normally you'd so some very safe type checking and query binding to a database here.
     // ...and we're gonna fake that.\
     $payload = json_decode($job->workload(), true);
-    print_r($payload);
-    //$result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    $fn = new lookupUserAction();
+    echo '🔄 ';
 
-    $a = new handleExceptions($fn->getInstance());
+    //echo "\n🆕  -  customerUpdate -> Atualizando usuário.\n";
 
-    //print_r($called->getAll());
+    //dd(__FILE__, $payload[0], $payload[1]);
 
-    //echo "Looking up user \n";
-    sleep(3);
-    return \json_encode($a);
+    $updateAction = new customerAction();
+            
+    $updateAction->update(
+        $payload[0],
+        $payload[1]
+    );
+
+    //header('Content-Type: application/json');
+    //http_response_code(202);
+    return json_encode( ['data' => [
+        'success' => true
+    ]]);
+
+    //echo "🖥️ -  Updating users \n";
+    //sleep(3);
+    //return \json_encode($a);
 });
 
 $worker->addFunction('baconate', function(\GearmanJob $job){

@@ -21,29 +21,31 @@ class UserAction extends baseAction
     protected string $last_update;
     protected CPFValueObject $cpf;
 
-    public function getInstance($fields = ['email', 'first_name']) {
+    public function getInstance($fields = ['email' => 'marco.a.simao@gmail.com', 'first_name' => 'Marco', 'customer_id' => 2]) { //, 'teste' => 23423432]) {
         $output = '';
 
-        if (in_array(array_keys($this->returnContract()), $fields)) {
-            die('in_array');
+        print_r($fields);
+
+        //var_dump($fields);
+
+        echo '<br><br>';
+
+        //var_dump(array_keys($this->returnContract()));
+
+        echo '<br><br>';
+
+        $extra_fields = array_diff(array_keys($fields), array_keys($this->returnContract()));
+
+        if (!empty($extra_fields)) {
+            throw new \Exception("There are fields that doesn't belong here.", 400);
         }
-
-        var_dump($fields);
-
-        echo '<br><br>';
-
-        var_dump(array_keys($this->returnContract()));
-
-        echo '<br><br>';
-
-        var_dump(array_diff(array_values($this->returnContract()), array_values($fields)));
 
         echo '<br><br>';
 
         foreach (array_keys($this->returnContract()) as $field) {
             $output .= "{$field} = :{$field}, ";
         }
-        print_r($output);
+        //print_r($output);
         die(__FILE__ . ": " . __LINE__);
 
         $callable = new DataBaseCallable("SELECT * FROM customer where email = :email", ['email' => 'MARSHALL.THORN@sakilacustomer.org']);
@@ -51,9 +53,17 @@ class UserAction extends baseAction
         return $callable->call();
     }
 
-    public function atomicUpdate()
+    public function updateMany(Array $columnsAndValues, Array $where = ['customer_id' => 2])
     {
-        $callable = new DataBaseCallable("UPDATE customer SET where email = :email", ['email' => 'MARSHALL.THORN@sakilacustomer.org']);
+        implode(', ', $columnsAndValues);
+        $callable = new DataBaseCallable("UPDATE customer SET {$column} = {$value} WHERE {$where[0]} = :customer_id", $where[1]);
+        
+        return $callable->call();
+    }
+
+    public function updateOne($column, $value, $where = ['customer_id' => 2])
+    {
+        $callable = new DataBaseCallable("UPDATE customer SET {$column} = {$value} WHERE {$where[0]} = :customer_id", $where[1]);
         
         return $callable->call();
     }

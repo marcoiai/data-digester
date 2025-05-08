@@ -11,20 +11,30 @@ class DataBaseCallable extends baseCallable
     public Array $params;
     public PDOStatement $resultCallStatement;
     public String $resultCall;
+    public $pdo;
 
     public function __construct($statement, $params)
     {
         $this->statement = $statement;
         $this->params = $params;
+
+        $this->pdo = new PDOTest();
+    }
+
+    public function setStatement(String $stmt) {
+        $this->statement = $stmt;
+    }
+
+    public function setParams($params) {
+        $this->params = $params;
     }
 
     public function call(mixed $source = '') 
     {
-        $pdo = new PDOTest();
-        $stmt = $pdo->prepare($this->statement);
+        $stmt = $this->pdo->prepare($this->statement);
         $stmt->execute($this->params);
 
-        $this->resultCallStatement = $stmt;
+        return $this->resultCallStatement = $stmt;
     }
 
     public function getAll() {
